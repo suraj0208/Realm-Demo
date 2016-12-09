@@ -42,12 +42,12 @@ public class TransactionAdapter extends ArrayAdapter {
         TextView tvTransactionState = (TextView)row.findViewById(R.id.tvTransactionRowState);
 
         if(transactions.get(position).getAmount()>0){
-            tvTransactionState.setText("They owe you Rs.");
+            tvTransactionState.setText("They owe you");
         }else{
-            tvTransactionState.setText("You owe them Rs.");
+            tvTransactionState.setText("You owe them");
         }
 
-        ((TextView)row.findViewById(R.id.tvTransactionRowAmount)).setText(Integer.toString(Math.abs(transactions.get(position).getAmount())));
+        ((TextView)row.findViewById(R.id.tvTransactionRowAmount)).setText("Rs. " + Math.abs(transactions.get(position).getAmount()));
 
         return row;
     }

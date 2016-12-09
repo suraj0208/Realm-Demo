@@ -88,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         transaction.setTimestamp(System.currentTimeMillis());
 
         realm.commitTransaction();
+
+        etName.setText("");
+        etAmount.setText("");
     }
 
     @Override

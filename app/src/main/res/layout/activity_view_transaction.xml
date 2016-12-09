@@ -18,7 +18,7 @@
         android:entries="@array/whichViewArray" />
 
     <TextView
-        android:id="@+id/totalowe"
+        android:id="@+id/tvtotalowe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/spinWhichView"
@@ -29,7 +29,7 @@
         android:id="@+id/tvtotalown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/totalowe"
+        android:layout_below="@id/tvtotalowe"
         android:layout_margin="10dp"
         android:text="You own Rs. x from people" />
 
