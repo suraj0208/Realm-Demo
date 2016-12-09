@@ -4,9 +4,15 @@
     <string name="pick">Pick</string>
     <string name="amount">Amount</string>
     <string name="commit">Commit</string>
+    <string name="viewTransactions">View Transactions</string>
 
     <array name="transactionArray">
         <item>Give</item>
         <item>Take</item>
+    </array>
+
+    <array name="whichViewArray">
+        <item>View All</item>
+        <item>Specific Person</item>
     </array>
 </resources>

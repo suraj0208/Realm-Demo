@@ -61,7 +61,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:inputType="number"
-            android:text="@string/amount" />
+            android:hint="@string/amount" />
 
         <Button
             android:id="@+id/btnCommit"
@@ -117,5 +117,12 @@
             android:text="100" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnViewTransactions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llayoutCommonAmounts"
+        android:text="@string/viewTransactions" />
 
 </RelativeLayout>

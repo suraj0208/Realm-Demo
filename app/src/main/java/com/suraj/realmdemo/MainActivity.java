@@ -10,11 +10,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
+
+import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText etName;
     private EditText etAmount;
-
+    private Spinner spintransaction;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +27,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         etName = (EditText) findViewById(R.id.etName);
         etAmount = (EditText) findViewById(R.id.etTransactionAmount);
+        spintransaction = (Spinner) findViewById(R.id.spinTransaction);
 
         (findViewById(R.id.btnPick)).setOnClickListener(this);
+        (findViewById(R.id.btnCommit)).setOnClickListener(this);
+        (findViewById(R.id.btnViewTransactions)).setOnClickListener(this);
 
         (findViewById(R.id.btn10)).setOnClickListener(this);
         (findViewById(R.id.btn20)).setOnClickListener(this);
@@ -32,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn50)).setOnClickListener(this);
         (findViewById(R.id.btn100)).setOnClickListener(this);
 
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
 
     }
 
@@ -43,15 +52,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnPick:
                 pickContact();
                 break;
+
+            case R.id.btnCommit:
+                commitTransaction();
+                break;
+
+            case R.id.btnViewTransactions:
+                startActivity(new Intent(MainActivity.this, ViewTransactionActivity.class));
+                break;
+
             case R.id.btn10:
             case R.id.btn20:
             case R.id.btn30:
             case R.id.btn50:
             case R.id.btn100:
                 setAmount(view);
+                break;
 
         }
 
+    }
+
+    private void commitTransaction() {
+        realm.beginTransaction();
+
+        Transaction transaction = realm.createObject(Transaction.class);
+        transaction.setName(etName.getText().toString());
+
+        int amount = Integer.parseInt(etAmount.getText().toString());
+
+        if (spintransaction.getSelectedItemPosition() == 0)
+            amount *= -1;
+
+        transaction.setAmount(amount);
+        transaction.setTimestamp(System.currentTimeMillis());
+
+        realm.commitTransaction();
     }
 
     @Override
