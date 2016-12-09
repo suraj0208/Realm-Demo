@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Realm Demo</string>
+    <string name="hint_pick_contact">Pick a Contact or type a name</string>
+    <string name="pick">Pick</string>
+    <string name="amount">Amount</string>
+    <string name="commit">Commit</string>
+
+    <array name="transactionArray">
+        <item>Give</item>
+        <item>Take</item>
+    </array>
 </resources>

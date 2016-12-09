@@ -9,8 +9,113 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.suraj.realmdemo.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/llayoutPicker"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="10">
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="8"
+            android:gravity="center"
+            android:hint="@string/hint_pick_contact" />
+
+        <Button
+            android:id="@+id/btnPick"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="@string/pick" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llayoutTransaction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llayoutPicker"
+        android:layout_margin="10dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <Spinner
+            android:id="@+id/spinTransaction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/transactionArray"
+            android:gravity="center"
+            android:hint="@string/hint_pick_contact" />
+
+        <EditText
+            android:id="@+id/etTransactionAmount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:inputType="number"
+            android:text="@string/amount" />
+
+        <Button
+            android:id="@+id/btnCommit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/commit" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llayoutCommonAmounts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llayoutTransaction"
+        android:layout_margin="10dp"
+        android:orientation="horizontal"
+        android:weightSum="5">
+
+        <Button
+            android:id="@+id/btn10"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="10" />
+
+        <Button
+            android:id="@+id/btn20"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="20" />
+
+        <Button
+            android:id="@+id/btn30"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="30" />
+
+        <Button
+            android:id="@+id/btn50"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="50" />
+
+        <Button
+            android:id="@+id/btn100"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="100" />
+
+    </LinearLayout>
+
 </RelativeLayout>
