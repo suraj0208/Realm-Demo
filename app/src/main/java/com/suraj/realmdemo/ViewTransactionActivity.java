@@ -27,14 +27,10 @@ public class ViewTransactionActivity extends Activity {
         ArrayList<Transaction> transactions = new ArrayList<>();
 
         for(Transaction transaction : results){
-            System.out.println("adding");
             transactions.add(transaction);
         }
 
         Collections.sort(transactions);
-
-        for(Transaction transaction:transactions)
-            System.out.println(transaction.getName());
 
         TransactionAdapter transactionAdapter = new TransactionAdapter(this,transactions);
 
