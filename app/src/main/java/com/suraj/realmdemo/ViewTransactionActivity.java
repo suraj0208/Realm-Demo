@@ -35,7 +35,7 @@ public class ViewTransactionActivity extends Activity {
             transactions.add(transaction);
 
             if (transaction.getAmount() < 0)
-                owe_to += g.getAmount();
+                owe_to += transaction.getAmount();
             else
                 owe_from += transaction.getAmount();
 
@@ -43,7 +43,7 @@ public class ViewTransactionActivity extends Activity {
 
         owe_to *=-1;
 
-        Collections.sort(transactions);
+        Collections.sort(transactions);g
 
         TransactionAdapter transactionAdapter = new TransactionAdapter(this, transactions);
 
