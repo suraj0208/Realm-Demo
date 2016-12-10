@@ -136,6 +136,7 @@
         android:text="@string/freq_string" />
 
     <LinearLayout
+        android:id="@+id/llayoutFrequents"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_below="@id/tvFreqTitle"
@@ -185,6 +186,14 @@
             android:visibility="gone" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnViewSpecific"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llayoutFrequents"
+        android:text="View for"
+        android:visibility="invisible" />
 
 
 </RelativeLayout>

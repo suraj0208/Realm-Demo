@@ -23,6 +23,15 @@
         android:text="They owe you" />
 
     <TextView
+        android:id="@+id/tvdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/tvTransactionRowName"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:text="1/1/17" />
+
+    <TextView
         android:id="@+id/tvTransactionRowAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,5 +39,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:text="Rs. x" />
+
 
 </RelativeLayout>

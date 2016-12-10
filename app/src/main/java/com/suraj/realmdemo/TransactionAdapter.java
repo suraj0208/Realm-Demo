@@ -9,7 +9,9 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by suraj on 9/12/16.
@@ -48,6 +50,14 @@ public class TransactionAdapter extends ArrayAdapter {
         }
 
         ((TextView)row.findViewById(R.id.tvTransactionRowAmount)).setText("Rs. " + Math.abs(transactions.get(position).getAmount()));
+
+        Date date = new Date(transactions.get(position).getTimestamp());
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        String dateString = formatter.format(date);
+
+        ((TextView)row.findViewById(R.id.tvdate)).setText(dateString);
+
 
         return row;
     }

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.realm.Realm;
-import io.realm.RealmModel;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
@@ -40,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText etAmount;
     private Spinner spinTransaction;
     private Realm realm;
+    private String name;
+    private Button btnViewFrequent;
     private long id;
 
     @Override
@@ -60,6 +61,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn30)).setOnClickListener(this);
         (findViewById(R.id.btn50)).setOnClickListener(this);
         (findViewById(R.id.btn100)).setOnClickListener(this);
+
+        btnViewFrequent = (Button) (findViewById(R.id.btnViewSpecific));
+
+        btnViewFrequent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
+                intent.putExtra("name", name);
+                startActivity(intent);
+            }
+        });
 
         Realm.init(this);
         realm = Realm.getDefaultInstance();
@@ -84,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean equals(Object obj) {
 
-                if(obj instanceof FavTransaction)
-                    return  this.name.equals( ((FavTransaction)obj).getName());
+                if (obj instanceof FavTransaction)
+                    return this.name.equals(((FavTransaction) obj).getName());
 
                 return super.equals(obj);
             }
@@ -164,11 +176,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID",id);
+                    RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID", id);
 
-                    Transaction transaction = (Transaction) realmQuery.findFirst();
+                    final Transaction transaction = (Transaction) realmQuery.findFirst();
 
                     etName.setText(transaction.getName());
+                    name = transaction.getName();
+
+                    btnViewFrequent.setVisibility(View.VISIBLE);
+                    btnViewFrequent.setText("View " + name +"'s details");
 
                 }
             });

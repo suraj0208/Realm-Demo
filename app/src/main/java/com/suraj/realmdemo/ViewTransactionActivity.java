@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import io.realm.Realm;
+import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 public class ViewTransactionActivity extends Activity {
@@ -27,8 +28,22 @@ public class ViewTransactionActivity extends Activity {
         Realm.init(this);
         realm = Realm.getDefaultInstance();
 
-        RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
+        if(getIntent().getExtras()!=null){
+            String name = getIntent().getExtras().getString("name");
+            RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name",name);
 
+            System.out.println(name);
+
+            RealmResults<Transaction> realmResults = realmQuery.findAll();
+            displayInListView(realmResults,true);
+
+        }else {
+            RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
+            displayInListView(results,false);
+        }
+    }
+
+    public void displayInListView(RealmResults<Transaction> results,boolean single){
         ArrayList<Transaction> transactions = new ArrayList<>();
 
         for (Transaction transaction : results) {
@@ -52,9 +67,25 @@ public class ViewTransactionActivity extends Activity {
         tvOwn = (TextView) findViewById(R.id.tvtotalown);
         tvOwe = (TextView) findViewById(R.id.tvtotalowe);
 
+        if(single){
+            tvOwe.setText("You owe Rs. " + owe_to + " to " + "and  Rs. " + owe_from + " from them.");
+
+            int diff = owe_from-owe_to;
+
+            if(diff<0){
+                tvOwn.setText("Give them Rs. " + Math.abs(diff) + ".");
+            }else if (diff>0){
+                tvOwn.setText("Take Rs. " + Math.abs(diff) + " from them.");
+            }else {
+
+            }
+
+
+            return;
+
+        }
+
         tvOwe.setText("You owe Rs. " + owe_to + " to following people.");
         tvOwn.setText("Following people owe Rs. " + owe_from + " to you.");
-
-
     }
 }
