@@ -1,21 +1,15 @@
 package com.suraj.realmdemo;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 
 import io.realm.Realm;
 import io.realm.RealmQuery;
@@ -28,8 +22,10 @@ public class ViewTransactionActivity extends Activity {
     private int owe_to = 0;
     private TextView tvOwe;
     private TextView tvOwn;
+    private TextView tvPersonName;
     private Spinner spinner;
     private String name;
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,34 +35,36 @@ public class ViewTransactionActivity extends Activity {
         Realm.init(this);
         realm = Realm.getDefaultInstance();
 
+        tvOwn = (TextView) findViewById(R.id.tvtotalown);
+        tvOwe = (TextView) findViewById(R.id.tvtotalowe);
+        tvPersonName = (TextView) findViewById(R.id.tvTransactionPersonName);
+
+        listView = (ListView) findViewById(R.id.lstviewTransactions);
+
+
         if (getIntent().getExtras() != null) {
             String name = getIntent().getExtras().getString("name");
-            RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
-
-            this.name=name;
-
-            RealmResults<Transaction> realmResults = realmQuery.findAll();
-            displayInListView(realmResults, true);
-
+            this.name = name;
+            tvPersonName.setText(name);
+            displayInListView(getPersonTransactions(name), true);
         } else {
-            RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
-            displayInListView(results, false);
+            displayInListView(getAllReamTransactions(), false);
+            tvPersonName.setText(getResources().getString(R.string.all_transactions));
         }
 
-        spinner = (Spinner)findViewById(R.id.spinWhichView);
+        spinner = (Spinner) findViewById(R.id.spinWhichView);
 
         spinner.setSelection(1);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if(spinner.getSelectedItemPosition()==0){
-                    RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
-                    displayInListView(results, false);
-                }else{
-                    RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
-                    RealmResults<Transaction> realmResults = realmQuery.findAll();
-                    displayInListView(realmResults, true);
+                if (spinner.getSelectedItemPosition() == 0) {
+                    displayInListView(getAllReamTransactions(), false);
+                    tvPersonName.setText(getResources().getString(R.string.all_transactions));
+                } else {
+                    displayInListView(getPersonTransactions(name), true);
+                    tvPersonName.setText(name);
                 }
 
             }
@@ -79,11 +77,11 @@ public class ViewTransactionActivity extends Activity {
 
     }
 
-    public void displayInListView(RealmResults<Transaction> results, boolean single) {
-        ArrayList<Transaction> transactions = new ArrayList<>();
+    public void displayInListView(final RealmResults<Transaction> results, final boolean single) {
+        final ArrayList<Transaction> transactions = new ArrayList<>();
 
-        owe_to=0;
-        owe_from=0;
+        owe_to = 0;
+        owe_from = 0;
 
         for (Transaction transaction : results) {
             transactions.add(transaction);
@@ -100,35 +98,76 @@ public class ViewTransactionActivity extends Activity {
         Collections.sort(transactions);
 
 
-
-        tvOwn = (TextView) findViewById(R.id.tvtotalown);
-        tvOwe = (TextView) findViewById(R.id.tvtotalowe);
-
         if (single) {
             tvOwe.setText("You owe Rs. " + owe_to + " and they owe Rs. " + owe_from);
 
-            int diff = owe_from - owe_to;
-
-            if (diff < 0) {
-                tvOwn.setText("Give them Rs. " + Math.abs(diff) + ".");
-            } else if (diff > 0) {
-                tvOwn.setText("Take Rs. " + Math.abs(diff) + " from them.");
-            } else {
-                tvOwn.setText("You are all clear");
-            }
-            TransactionAdapter  transactionAdapter = new TransactionAdapter(getApplicationContext(),transactions);
+            TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions);
             transactionAdapter.setPerson(true);
+            listView.setAdapter(transactionAdapter);
+
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Transaction transaction = transactions.get(i);
+
+                    realm.beginTransaction();
+
+                    RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("timestamp", transaction.getTimestamp()).findAll();
+                    realmResults.deleteAllFromRealm();
+
+                    realm.commitTransaction();
+
+                    ViewTransactionActivity.this.displayInListView(getPersonTransactions(name), single);
+                    return false;
+
+                }
+            });
+
+        } else {
+            TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions);
+            listView.setAdapter(transactionAdapter);
+
+            tvOwe.setText("You owe people Rs. " + owe_to + " and people owe you Rs. " + owe_from);
 
 
-            ((ListView) findViewById(R.id.lstviewTransactions)).setAdapter(transactionAdapter);
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Transaction transaction = transactions.get(i);
 
-            return;
+                    realm.beginTransaction();
 
+                    RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("timestamp", transaction.getTimestamp()).findAll();
+                    realmResults.deleteFirstFromRealm();
+
+                    realm.commitTransaction();
+
+                    ViewTransactionActivity.this.displayInListView(getAllReamTransactions(), single);
+
+                    return false;
+                }
+            });
         }
-        TransactionAdapter  transactionAdapter = new TransactionAdapter(getApplicationContext(),transactions);
-        ((ListView) findViewById(R.id.lstviewTransactions)).setAdapter(transactionAdapter);
 
-        tvOwe.setText("You owe these people Rs. " + owe_to);
-        tvOwn.setText("Following people owe you Rs. " + owe_from);
+        int diff = owe_from - owe_to;
+
+        if (diff < 0) {
+            tvOwn.setText("Give them Rs. " + Math.abs(diff) + ".");
+        } else if (diff > 0) {
+            tvOwn.setText("Take Rs. " + Math.abs(diff) + " from them.");
+        } else {
+            tvOwn.setText("You are all clear");
+        }
+
+
+    }
+
+    RealmResults<Transaction> getAllReamTransactions() {
+        return realm.where(Transaction.class).findAll();
+    }
+
+    RealmResults<Transaction> getPersonTransactions(String name) {
+        RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
+        return realmQuery.findAll();
     }
 }

@@ -6,6 +6,9 @@
     <string name="commit">Commit</string>
     <string name="viewTransactions">View Transactions</string>
     <string name="freq_string">Frequents</string>
+    <string name="all_transactions">All transactions</string>
+    <string name="reason">For what?</string>
+
 
     <array name="transactionArray">
         <item>Give to them</item>

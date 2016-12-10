@@ -18,10 +18,20 @@
         android:entries="@array/whichViewArray" />
 
     <TextView
-        android:id="@+id/tvtotalowe"
+        android:id="@+id/tvTransactionPersonName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/spinWhichView"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:text="@string/pick"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/tvtotalowe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvTransactionPersonName"
         android:layout_margin="10dp"
         android:text="You owe Rs. x to following people" />
 

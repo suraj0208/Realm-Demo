@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn100)).setOnClickListener(this);
 
 
-        imgviewPhoto =((ImageView) findViewById(R.id.imgviewContact));
+        imgviewPhoto = ((ImageView) findViewById(R.id.imgviewContact));
 
         imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
 
@@ -76,6 +76,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         showFavorites();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        showFavorites();
     }
 
     private void showFavorites() {
@@ -139,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 (ImageView) findViewById(R.id.imgbtnFreq5)};
 
         int k = 0;
+
+        for (ImageView imageView : imageViews)
+            imageView.setVisibility(View.GONE);
 
         for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
 
@@ -209,6 +219,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.btnViewTransactions:
+                if (name == null || name.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "Pick a contact first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
                 intent.putExtra("name", name);
                 startActivity(intent);
@@ -227,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void commitTransaction() {
-        if (etName.getText().length() == 0 || etAmount.getText().length() == 0 || etReason.getText().length()==0) {
+        if (etName.getText().length() == 0 || etAmount.getText().length() == 0 || etReason.getText().length() == 0) {
             Toast.makeText(getApplicationContext(), "Fill Required Fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -276,9 +291,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
             etName.setText(name);
-            this.name=name;
+            this.name = name;
 
-            Bitmap photo =null;
+            Bitmap photo = null;
 
             try {
                 InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
