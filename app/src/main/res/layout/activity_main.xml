@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,193 +10,248 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.suraj.realmdemo.MainActivity">
 
+
     <LinearLayout
-        android:id="@+id/llayoutPicker"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:weightSum="10">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="8"
-            android:enabled="false"
-            android:gravity="center"
-            android:hint="@string/hint_pick_contact" />
-
-        <Button
-            android:id="@+id/btnPick"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:layout_weight="2"
-            android:gravity="center"
-            android:text="@string/pick" />
+            android:elevation="50dp"
+            app:cardCornerRadius="20dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/llayoutPicker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="10">
+
+                    <ImageView
+                        android:id="@+id/imgviewContact"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="2" />
+
+                    <EditText
+                        android:id="@+id/etName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="5"
+                        android:enabled="false"
+                        android:gravity="center"
+                        android:hint="@string/hint_pick_contact" />
+
+                    <Button
+                        android:id="@+id/btnPick"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:gravity="center"
+                        android:text="@string/pick" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnViewTransactions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/llayoutPicker"
+                    android:layout_margin="10dp"
+                    android:text="@string/viewTransactions" />
+
+                <LinearLayout
+                    android:id="@+id/llayoutAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/btnViewTransactions"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <Spinner
+                        android:id="@+id/spinTransaction"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:entries="@array/transactionArray"
+                        android:gravity="center"
+                        android:hint="@string/hint_pick_contact" />
+
+                    <EditText
+                        android:id="@+id/etTransactionAmount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:hint="@string/amount"
+                        android:inputType="number" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/llayoutCommonAmounts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/llayoutAmount"
+                    android:layout_margin="10dp"
+                    android:orientation="horizontal"
+                    android:weightSum="5">
+
+                    <Button
+                        android:id="@+id/btn10"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="10" />
+
+                    <Button
+                        android:id="@+id/btn20"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="20" />
+
+                    <Button
+                        android:id="@+id/btn30"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="30" />
+
+                    <Button
+                        android:id="@+id/btn50"
+
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="50" />
+
+                    <Button
+                        android:id="@+id/btn100"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="100" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/llayoutReasonAndCommit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/llayoutCommonAmounts"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <EditText
+                        android:id="@+id/etReason"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:hint="@string/amount" />
+
+                    <Button
+                        android:id="@+id/btnCommit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/commit" />
+
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:layout_weight="4"
+            android:elevation="50dp"
+            app:cardCornerRadius="20dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/tvFreqTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:text="@string/freq_string" />
+
+                <LinearLayout
+                    android:id="@+id/llayoutFrequents"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/tvFreqTitle"
+                    android:layout_centerHorizontal="true"
+                    android:orientation="horizontal"
+                    android:weightSum="5">
+
+                    <ImageView
+                        android:id="@+id/imgbtnFreq1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:minWidth="30dp"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/imgbtnFreq2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/imgbtnFreq3"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/imgbtnFreq4"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/imgbtnFreq5"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
 
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llayoutTransaction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/llayoutPicker"
-        android:layout_margin="10dp"
-        android:orientation="horizontal"
-        android:weightSum="3">
-
-        <Spinner
-            android:id="@+id/spinTransaction"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:entries="@array/transactionArray"
-            android:gravity="center"
-            android:hint="@string/hint_pick_contact" />
-
-        <EditText
-            android:id="@+id/etTransactionAmount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:hint="@string/amount"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/btnCommit"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/commit" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llayoutCommonAmounts"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/llayoutTransaction"
-        android:layout_margin="10dp"
-        android:orientation="horizontal"
-        android:weightSum="5">
-
-        <Button
-            android:id="@+id/btn10"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="10" />
-
-        <Button
-            android:id="@+id/btn20"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="20" />
-
-        <Button
-            android:id="@+id/btn30"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="30" />
-
-        <Button
-            android:id="@+id/btn50"
-
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="50" />
-
-        <Button
-            android:id="@+id/btn100"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="100" />
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/btnViewTransactions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/llayoutCommonAmounts"
-        android:layout_margin="10dp"
-        android:text="@string/viewTransactions" />
-
-    <TextView
-        android:id="@+id/tvFreqTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnViewTransactions"
-        android:layout_margin="10dp"
-        android:text="@string/freq_string" />
-
-    <LinearLayout
-        android:id="@+id/llayoutFrequents"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_below="@id/tvFreqTitle"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
-        android:weightSum="5">
-
-        <ImageView
-            android:id="@+id/imgbtnFreq1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:minWidth="30dp"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/imgbtnFreq2"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/imgbtnFreq3"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/imgbtnFreq4"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/imgbtnFreq5"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/btnViewSpecific"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/llayoutFrequents"
-        android:layout_margin="10dp"
-        android:text="View for"
-        android:visibility="invisible" />
 
 
 </RelativeLayout>

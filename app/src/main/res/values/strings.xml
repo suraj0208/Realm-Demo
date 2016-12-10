@@ -8,8 +8,8 @@
     <string name="freq_string">Frequents</string>
 
     <array name="transactionArray">
-        <item>Give</item>
-        <item>Take</item>
+        <item>Give to them</item>
+        <item>Take from them</item>
     </array>
 
     <array name="whichViewArray">

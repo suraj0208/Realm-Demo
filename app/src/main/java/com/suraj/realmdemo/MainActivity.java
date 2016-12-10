@@ -37,11 +37,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 1;
     private EditText etName;
     private EditText etAmount;
+    private EditText etReason;
     private Spinner spinTransaction;
     private Realm realm;
     private String name;
-    private Button btnViewFrequent;
     private long id;
+    private ImageView imgviewPhoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         etName = (EditText) findViewById(R.id.etName);
         etAmount = (EditText) findViewById(R.id.etTransactionAmount);
+        etReason = (EditText) findViewById(R.id.etReason);
+
         spinTransaction = (Spinner) findViewById(R.id.spinTransaction);
 
         (findViewById(R.id.btnPick)).setOnClickListener(this);
@@ -62,16 +65,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn50)).setOnClickListener(this);
         (findViewById(R.id.btn100)).setOnClickListener(this);
 
-        btnViewFrequent = (Button) (findViewById(R.id.btnViewSpecific));
 
-        btnViewFrequent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
-                intent.putExtra("name", name);
-                startActivity(intent);
-            }
-        });
+        imgviewPhoto =((ImageView) findViewById(R.id.imgviewContact));
+
+        imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
+
 
         Realm.init(this);
         realm = Realm.getDefaultInstance();
@@ -83,9 +81,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showFavorites() {
         class FavTransaction extends Transaction {
 
-
             public FavTransaction(Transaction transaction) {
-                super(transaction.name, transaction.amount, transaction.ID);
+                super(transaction.name, transaction.amount, transaction.reason, transaction.ID);
             }
 
             @Override
@@ -153,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public boolean displayContactPictureFromID(ImageView imageView, final Long id) {
+    public boolean displayContactPictureFromID(final ImageView imageView, final Long id) {
         Bitmap photo = null;
 
         try {
@@ -170,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return false;
             }
 
+
             //imageView.setImageBitmap(photo);
             imageView.setImageDrawable(new RoundImageDrawable(photo));
             imageView.setVisibility(View.VISIBLE);
@@ -182,9 +180,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     etName.setText(transaction.getName());
                     name = transaction.getName();
+                    imgviewPhoto.setImageDrawable(imageView.getDrawable());
 
-                    btnViewFrequent.setVisibility(View.VISIBLE);
-                    btnViewFrequent.setText("View " + name +"'s details");
 
                 }
             });
@@ -212,7 +209,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.btnViewTransactions:
-                startActivity(new Intent(MainActivity.this, ViewTransactionActivity.class));
+                Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
+                intent.putExtra("name", name);
+                startActivity(intent);
                 break;
 
             case R.id.btn10:
@@ -228,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void commitTransaction() {
-        if (etName.getText().length() == 0 || etAmount.getText().length() == 0) {
+        if (etName.getText().length() == 0 || etAmount.getText().length() == 0 || etReason.getText().length()==0) {
             Toast.makeText(getApplicationContext(), "Fill Required Fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -238,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Transaction transaction = realm.createObject(Transaction.class);
         transaction.setName(etName.getText().toString());
         transaction.setID(id);
+        transaction.setReason(etReason.getText().toString());
 
         int amount = Integer.parseInt(etAmount.getText().toString());
 
@@ -249,8 +249,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         realm.commitTransaction();
 
-        etName.setText("");
         etAmount.setText("");
+        etReason.setText("");
 
         Toast.makeText(getApplicationContext(), "Data Entered", Toast.LENGTH_SHORT).show();
 
@@ -276,6 +276,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
             etName.setText(name);
+            this.name=name;
+
+            Bitmap photo =null;
+
+            try {
+                InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
+                        ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id));
+
+                if (inputStream != null) {
+                    photo = BitmapFactory.decodeStream(inputStream);
+                }
+
+                if (inputStream != null) inputStream.close();
+
+                if (photo == null) {
+                    imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
+                    return;
+                }
+
+                imgviewPhoto.setImageDrawable(new RoundImageDrawable(photo));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
 
             c.close();
         }

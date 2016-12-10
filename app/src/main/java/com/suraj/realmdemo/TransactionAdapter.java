@@ -17,15 +17,19 @@ import java.util.Date;
  * Created by suraj on 9/12/16.
  */
 public class TransactionAdapter extends ArrayAdapter {
-    private ArrayList<Transaction> transactions;
-    private Context context;
+    protected ArrayList<Transaction> transactions;
+    protected Context context;
+
+    public void setPerson(boolean person) {
+        this.person = person;
+    }
+
+    protected boolean person;
 
     public TransactionAdapter(Context context, ArrayList<Transaction> transactions) {
         super(context, R.layout.transaction_row);
-
         this.context = context;
         this.transactions = transactions;
-
     }
 
     @Override
@@ -39,7 +43,10 @@ public class TransactionAdapter extends ArrayAdapter {
 
         View row = layoutInflater.inflate(R.layout.transaction_row,parent,false);
 
-        ((TextView)row.findViewById(R.id.tvTransactionRowName)).setText(transactions.get(position).getName());
+        if(person)
+            ((TextView)row.findViewById(R.id.tvTransactionRowName)).setText(transactions.get(position).getReason());
+        else
+            ((TextView)row.findViewById(R.id.tvTransactionRowName)).setText(transactions.get(position).getName());
 
         TextView tvTransactionState = (TextView)row.findViewById(R.id.tvTransactionRowState);
 

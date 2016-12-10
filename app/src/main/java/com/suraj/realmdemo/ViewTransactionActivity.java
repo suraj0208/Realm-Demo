@@ -1,12 +1,21 @@
 package com.suraj.realmdemo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import io.realm.Realm;
 import io.realm.RealmQuery;
@@ -19,6 +28,8 @@ public class ViewTransactionActivity extends Activity {
     private int owe_to = 0;
     private TextView tvOwe;
     private TextView tvOwn;
+    private Spinner spinner;
+    private String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +43,7 @@ public class ViewTransactionActivity extends Activity {
             String name = getIntent().getExtras().getString("name");
             RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
 
-            System.out.println(name);
+            this.name=name;
 
             RealmResults<Transaction> realmResults = realmQuery.findAll();
             displayInListView(realmResults, true);
@@ -41,10 +52,38 @@ public class ViewTransactionActivity extends Activity {
             RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
             displayInListView(results, false);
         }
+
+        spinner = (Spinner)findViewById(R.id.spinWhichView);
+
+        spinner.setSelection(1);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if(spinner.getSelectedItemPosition()==0){
+                    RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
+                    displayInListView(results, false);
+                }else{
+                    RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
+                    RealmResults<Transaction> realmResults = realmQuery.findAll();
+                    displayInListView(realmResults, true);
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
     }
 
     public void displayInListView(RealmResults<Transaction> results, boolean single) {
         ArrayList<Transaction> transactions = new ArrayList<>();
+
+        owe_to=0;
+        owe_from=0;
 
         for (Transaction transaction : results) {
             transactions.add(transaction);
@@ -60,9 +99,7 @@ public class ViewTransactionActivity extends Activity {
 
         Collections.sort(transactions);
 
-        TransactionAdapter transactionAdapter = new TransactionAdapter(this, transactions);
 
-        ((ListView) findViewById(R.id.lstviewTransactions)).setAdapter(transactionAdapter);
 
         tvOwn = (TextView) findViewById(R.id.tvtotalown);
         tvOwe = (TextView) findViewById(R.id.tvtotalowe);
@@ -77,13 +114,19 @@ public class ViewTransactionActivity extends Activity {
             } else if (diff > 0) {
                 tvOwn.setText("Take Rs. " + Math.abs(diff) + " from them.");
             } else {
-
+                tvOwn.setText("You are all clear");
             }
+            TransactionAdapter  transactionAdapter = new TransactionAdapter(getApplicationContext(),transactions);
+            transactionAdapter.setPerson(true);
 
+
+            ((ListView) findViewById(R.id.lstviewTransactions)).setAdapter(transactionAdapter);
 
             return;
 
         }
+        TransactionAdapter  transactionAdapter = new TransactionAdapter(getApplicationContext(),transactions);
+        ((ListView) findViewById(R.id.lstviewTransactions)).setAdapter(transactionAdapter);
 
         tvOwe.setText("You owe these people Rs. " + owe_to);
         tvOwn.setText("Following people owe you Rs. " + owe_from);

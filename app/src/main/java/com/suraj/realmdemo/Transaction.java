@@ -8,15 +8,26 @@ import io.realm.RealmObject;
 public class Transaction extends RealmObject implements Comparable<Transaction> {
     protected String name;
     protected int amount;
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    protected String reason;
     protected Long ID;
 
     public Transaction(){
 
     }
 
-    public Transaction(String name, int amount, Long URI) {
+    public Transaction(String name, int amount, String reason, Long URI) {
         this.name = name;
         this.amount = amount;
+        this.reason = reason;
         this.ID = URI;
     }
 
