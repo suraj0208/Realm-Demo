@@ -43,7 +43,7 @@ public class ViewTransactionActivity extends Activity {
 
         owe_to *=-1;
 
-        Collections.sort(transactions);g
+        Collections.sort(transactions);
 
         TransactionAdapter transactionAdapter = new TransactionAdapter(this, transactions);
 
