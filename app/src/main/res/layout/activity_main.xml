@@ -60,8 +60,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:inputType="number"
-            android:hint="@string/amount" />
+            android:hint="@string/amount"
+            android:inputType="number" />
 
         <Button
             android:id="@+id/btnCommit"
@@ -124,5 +124,58 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/llayoutCommonAmounts"
         android:text="@string/viewTransactions" />
+
+    <TextView
+        android:id="@+id/tvFreqTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnViewTransactions"
+        android:layout_margin="10dp"
+        android:text="@string/freq_string" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below="@id/tvFreqTitle"
+        android:weightSum="5">
+
+        <ImageView
+            android:id="@+id/imgbtnFreq1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/imgbtnFreq2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/imgbtnFreq3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/imgbtnFreq4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/imgbtnFreq5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_weight="1" />
+
+
+    </LinearLayout>
+
 
 </RelativeLayout>

@@ -1,24 +1,44 @@
 package com.suraj.realmdemo;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 1;
     private EditText etName;
     private EditText etAmount;
-    private Spinner spintransaction;
+    private Spinner spinTransaction;
     private Realm realm;
+    private long id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         etName = (EditText) findViewById(R.id.etName);
         etAmount = (EditText) findViewById(R.id.etTransactionAmount);
-        spintransaction = (Spinner) findViewById(R.id.spinTransaction);
+        spinTransaction = (Spinner) findViewById(R.id.spinTransaction);
 
         (findViewById(R.id.btnPick)).setOnClickListener(this);
         (findViewById(R.id.btnCommit)).setOnClickListener(this);
@@ -42,6 +62,101 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Realm.init(this);
         realm = Realm.getDefaultInstance();
 
+        showFavorites();
+
+    }
+
+    private void showFavorites() {
+        class FavTransaction extends Transaction {
+
+
+            public FavTransaction(Transaction transaction) {
+                super(transaction.name, transaction.amount, transaction.ID);
+            }
+
+            @Override
+            public int hashCode() {
+                return this.name.hashCode();
+            }
+
+        }
+
+
+        RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
+
+        HashMap<FavTransaction, Integer> hashMap = new HashMap<>();
+
+        for (Transaction transaction : results) {
+            FavTransaction favTransaction = new FavTransaction(transaction);
+            if (hashMap.containsKey(favTransaction)) {
+                hashMap.put(favTransaction, hashMap.get(favTransaction) + 1);
+            } else {
+                hashMap.put(favTransaction, 1);
+            }
+        }
+
+
+        List<Map.Entry<FavTransaction, Integer>> entryList = new ArrayList<>(hashMap.entrySet());
+
+        Collections.sort(entryList, new Comparator<Map.Entry<FavTransaction, Integer>>() {
+            @Override
+            public int compare(Map.Entry<FavTransaction, Integer> favTransactionIntegerEntry, Map.Entry<FavTransaction, Integer> t1) {
+                return t1.getValue().compareTo(favTransactionIntegerEntry.getValue());
+            }
+        });
+
+
+        List<FavTransaction> favTransactionList = new ArrayList<>();
+
+        for (int i = 0; i < entryList.size(); i++) {
+            favTransactionList.add(entryList.get(i).getKey());
+        }
+
+
+        ImageView[] imageViews = {(ImageView) findViewById(R.id.imgbtnFreq1),
+                (ImageView) findViewById(R.id.imgbtnFreq2),
+                (ImageView) findViewById(R.id.imgbtnFreq3),
+                (ImageView) findViewById(R.id.imgbtnFreq4),
+                (ImageView) findViewById(R.id.imgbtnFreq5)};
+
+        int k = 0;
+
+        for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
+
+            if (displayContactPictureFromID(imageViews[k], favTransactionList.get(i).getID()))
+                k++;
+
+        }
+
+
+    }
+
+    public boolean displayContactPictureFromID(ImageView imageView, Long id) {
+        Bitmap photo = null;
+
+        try {
+            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
+                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id));
+
+            if (inputStream != null) {
+                photo = BitmapFactory.decodeStream(inputStream);
+            }
+
+            if (inputStream != null) inputStream.close();
+
+            if (photo == null) {
+                return false;
+            }
+
+            imageView.setImageDrawable(new RoundImageDrawable(photo));
+
+            return true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     @Override
@@ -74,14 +189,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void commitTransaction() {
+        if (etName.getText().length() == 0 || etAmount.getText().length() == 0) {
+            Toast.makeText(getApplicationContext(), "Fill Required Fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         realm.beginTransaction();
 
         Transaction transaction = realm.createObject(Transaction.class);
         transaction.setName(etName.getText().toString());
+        transaction.setID(id);
 
         int amount = Integer.parseInt(etAmount.getText().toString());
 
-        if (spintransaction.getSelectedItemPosition() == 0)
+        if (spinTransaction.getSelectedItemPosition() == 0)
             amount *= -1;
 
         transaction.setAmount(amount);
@@ -91,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         etName.setText("");
         etAmount.setText("");
+
+        Toast.makeText(getApplicationContext(), "Data Entered", Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
@@ -98,18 +222,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK) {
-            Uri contactData = data.getData();
-            Cursor c = getContentResolver().query(contactData, null, null, null, null);
-            if (c != null && c.moveToFirst()) {
-                String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
-                etName.setText(name);
-                c.close();
-            }
+            getContactData(data);
         }
 
     }
 
+    private void getContactData(Intent data) {
+        Uri contactData = data.getData();
+        Cursor c = getContentResolver().query(contactData, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            id = c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
+
+            String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
+            etName.setText(name);
+
+            c.close();
+        }
+    }
+
     private void pickContact() {
+        getPermissionToReadUserContacts();
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
         startActivityForResult(intent, 1);
     }
@@ -117,4 +249,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void setAmount(View amount) {
         etAmount.setText(((Button) amount).getText());
     }
+
+    public void getPermissionToReadUserContacts() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (shouldShowRequestPermissionRationale(
+                    Manifest.permission.READ_CONTACTS)) {
+            }
+
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
+                    READ_CONTACTS_PERMISSIONS_REQUEST);
+        }
+    }
+
 }

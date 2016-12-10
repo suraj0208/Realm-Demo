@@ -5,6 +5,7 @@
     <string name="amount">Amount</string>
     <string name="commit">Commit</string>
     <string name="viewTransactions">View Transactions</string>
+    <string name="freq_string">Frequents</string>
 
     <array name="transactionArray">
         <item>Give</item>

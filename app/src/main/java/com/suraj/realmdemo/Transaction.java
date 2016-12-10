@@ -6,8 +6,19 @@ import io.realm.RealmObject;
  * Created by suraj on 9/12/16.
  */
 public class Transaction extends RealmObject implements Comparable<Transaction> {
-    private String name;
-    private int amount;
+    protected String name;
+    protected int amount;
+    protected Long ID;
+
+    public Transaction(){
+
+    }
+
+    public Transaction(String name, int amount, Long URI) {
+        this.name = name;
+        this.amount = amount;
+        this.ID = URI;
+    }
 
     public long getTimestamp() {
         return timestamp;
@@ -37,6 +48,14 @@ public class Transaction extends RealmObject implements Comparable<Transaction> 
 
     @Override
     public int compareTo(Transaction transaction) {
-        return new Long(this.timestamp).compareTo(transaction.timestamp);
+        return Long.valueOf(this.timestamp).compareTo(transaction.timestamp);
+    }
+
+    public Long getID() {
+        return ID;
+    }
+
+    public void setID(Long ID) {
+        this.ID = ID;
     }
 }
