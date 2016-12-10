@@ -28,22 +28,22 @@ public class ViewTransactionActivity extends Activity {
         Realm.init(this);
         realm = Realm.getDefaultInstance();
 
-        if(getIntent().getExtras()!=null){
+        if (getIntent().getExtras() != null) {
             String name = getIntent().getExtras().getString("name");
-            RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name",name);
+            RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
 
             System.out.println(name);
 
             RealmResults<Transaction> realmResults = realmQuery.findAll();
-            displayInListView(realmResults,true);
+            displayInListView(realmResults, true);
 
-        }else {
+        } else {
             RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
-            displayInListView(results,false);
+            displayInListView(results, false);
         }
     }
 
-    public void displayInListView(RealmResults<Transaction> results,boolean single){
+    public void displayInListView(RealmResults<Transaction> results, boolean single) {
         ArrayList<Transaction> transactions = new ArrayList<>();
 
         for (Transaction transaction : results) {
@@ -56,7 +56,7 @@ public class ViewTransactionActivity extends Activity {
 
         }
 
-        owe_to *=-1;
+        owe_to *= -1;
 
         Collections.sort(transactions);
 
@@ -67,16 +67,16 @@ public class ViewTransactionActivity extends Activity {
         tvOwn = (TextView) findViewById(R.id.tvtotalown);
         tvOwe = (TextView) findViewById(R.id.tvtotalowe);
 
-        if(single){
-            tvOwe.setText("You owe Rs. " + owe_to + " to " + "and  Rs. " + owe_from + " from them.");
+        if (single) {
+            tvOwe.setText("You owe Rs. " + owe_to + " and they owe Rs. " + owe_from);
 
-            int diff = owe_from-owe_to;
+            int diff = owe_from - owe_to;
 
-            if(diff<0){
+            if (diff < 0) {
                 tvOwn.setText("Give them Rs. " + Math.abs(diff) + ".");
-            }else if (diff>0){
+            } else if (diff > 0) {
                 tvOwn.setText("Take Rs. " + Math.abs(diff) + " from them.");
-            }else {
+            } else {
 
             }
 
@@ -85,7 +85,7 @@ public class ViewTransactionActivity extends Activity {
 
         }
 
-        tvOwe.setText("You owe Rs. " + owe_to + " to following people.");
-        tvOwn.setText("Following people owe Rs. " + owe_from + " to you.");
+        tvOwe.setText("You owe these people Rs. " + owe_to);
+        tvOwn.setText("Following people owe you Rs. " + owe_from);
     }
 }
