@@ -125,6 +125,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/llayoutCommonAmounts"
+        android:layout_margin="10dp"
         android:text="@string/viewTransactions" />
 
     <TextView
@@ -192,6 +193,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/llayoutFrequents"
+        android:layout_margin="10dp"
         android:text="View for"
         android:visibility="invisible" />
 
