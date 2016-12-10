@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.realm.Realm;
+import io.realm.RealmModel;
+import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -79,6 +81,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return this.name.hashCode();
             }
 
+            @Override
+            public boolean equals(Object obj) {
+
+                if(obj instanceof FavTransaction)
+                    return  this.name.equals( ((FavTransaction)obj).getName());
+
+                return super.equals(obj);
+            }
         }
 
 
@@ -131,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public boolean displayContactPictureFromID(ImageView imageView, Long id) {
+    public boolean displayContactPictureFromID(ImageView imageView, final Long id) {
         Bitmap photo = null;
 
         try {
@@ -148,7 +158,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return false;
             }
 
+            //imageView.setImageBitmap(photo);
             imageView.setImageDrawable(new RoundImageDrawable(photo));
+            imageView.setVisibility(View.VISIBLE);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID",id);
+
+                    Transaction transaction = (Transaction) realmQuery.findFirst();
+
+                    etName.setText(transaction.getName());
+
+                }
+            });
 
             return true;
 
@@ -202,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         int amount = Integer.parseInt(etAmount.getText().toString());
 
-        if (spinTransaction.getSelectedItemPosition() == 0)
+        if (spinTransaction.getSelectedItemPosition() == 1)
             amount *= -1;
 
         transaction.setAmount(amount);
@@ -214,6 +237,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         etAmount.setText("");
 
         Toast.makeText(getApplicationContext(), "Data Entered", Toast.LENGTH_SHORT).show();
+
+        showFavorites();
 
     }
 

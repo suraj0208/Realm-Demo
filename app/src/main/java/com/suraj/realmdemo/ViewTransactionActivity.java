@@ -14,8 +14,8 @@ import io.realm.RealmResults;
 public class ViewTransactionActivity extends Activity {
 
     private Realm realm;
-    private int owe = 0;
-    private int own = 0;
+    private int owe_from = 0;
+    private int owe_to = 0;
     private TextView tvOwe;
     private TextView tvOwn;
 
@@ -35,12 +35,13 @@ public class ViewTransactionActivity extends Activity {
             transactions.add(transaction);
 
             if (transaction.getAmount() < 0)
-                owe += transaction.getAmount();
+                owe_to += g.getAmount();
             else
-                own += transaction.getAmount();
+                owe_from += transaction.getAmount();
 
         }
-        owe *=-1;
+
+        owe_to *=-1;
 
         Collections.sort(transactions);
 
@@ -51,8 +52,8 @@ public class ViewTransactionActivity extends Activity {
         tvOwn = (TextView) findViewById(R.id.tvtotalown);
         tvOwe = (TextView) findViewById(R.id.tvtotalowe);
 
-        tvOwe.setText("You owe Rs. " + owe + " to following people.");
-        tvOwn.setText("Following people owe Rs. " + own + " to you.");
+        tvOwe.setText("You owe Rs. " + owe_to + " to following people.");
+        tvOwn.setText("Following people owe Rs. " + owe_from + " to you.");
 
 
     }
