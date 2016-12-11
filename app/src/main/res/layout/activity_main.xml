@@ -188,19 +188,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/tvFreqTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:text="@string/freq_string" />
 
                 <LinearLayout
                     android:id="@+id/llayoutFrequents"
                     android:layout_width="match_parent"
                     android:layout_height="70dp"
-                    android:layout_below="@id/tvFreqTitle"
                     android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
                     android:orientation="horizontal"
                     android:weightSum="5">
 
@@ -246,6 +240,15 @@
                         android:visibility="gone" />
 
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvFreqTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/llayoutFrequents"
+                    android:layout_margin="10dp"
+                    android:text="@string/freq_string" />
+
 
             </RelativeLayout>
 

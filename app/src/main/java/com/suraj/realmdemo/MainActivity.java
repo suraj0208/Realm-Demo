@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String name;
     private long id;
     private ImageView imgviewPhoto;
+    private ImageView[] imageViews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn50)).setOnClickListener(this);
         (findViewById(R.id.btn100)).setOnClickListener(this);
 
+        imageViews = new ImageView[]{(ImageView) findViewById(R.id.imgbtnFreq1),
+                (ImageView) findViewById(R.id.imgbtnFreq2),
+                (ImageView) findViewById(R.id.imgbtnFreq3),
+                (ImageView) findViewById(R.id.imgbtnFreq4),
+                (ImageView) findViewById(R.id.imgbtnFreq5)};
+
 
         imgviewPhoto = ((ImageView) findViewById(R.id.imgviewContact));
 
@@ -81,8 +88,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-
         showFavorites();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+            getContactData(data);
+        }
+
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+
+        switch (id) {
+            case R.id.btnPick:
+                pickContact();
+                break;
+
+            case R.id.btnCommit:
+                commitTransaction();
+                break;
+
+            case R.id.btnViewTransactions:
+                if (name == null || name.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "Pick a contact first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
+                intent.putExtra("name", name);
+                startActivity(intent);
+                break;
+
+            case R.id.btn10:
+            case R.id.btn20:
+            case R.id.btn30:
+            case R.id.btn50:
+            case R.id.btn100:
+                setAmount(view);
+                break;
+
+        }
+
     }
 
     private void showFavorites() {
@@ -139,107 +191,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-        ImageView[] imageViews = {(ImageView) findViewById(R.id.imgbtnFreq1),
-                (ImageView) findViewById(R.id.imgbtnFreq2),
-                (ImageView) findViewById(R.id.imgbtnFreq3),
-                (ImageView) findViewById(R.id.imgbtnFreq4),
-                (ImageView) findViewById(R.id.imgbtnFreq5)};
-
         int k = 0;
 
         for (ImageView imageView : imageViews)
             imageView.setVisibility(View.GONE);
 
         for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
-
             if (displayContactPictureFromID(imageViews[k], favTransactionList.get(i).getID()))
                 k++;
-
         }
-
-
     }
 
     public boolean displayContactPictureFromID(final ImageView imageView, final Long id) {
-        Bitmap photo = null;
+        Bitmap photo = getPhotoFromId(id);
 
-        try {
-            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
-                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id));
-
-            if (inputStream != null) {
-                photo = BitmapFactory.decodeStream(inputStream);
-            }
-
-            if (inputStream != null) inputStream.close();
-
-            if (photo == null) {
-                return false;
-            }
-
-
-            //imageView.setImageBitmap(photo);
-            imageView.setImageDrawable(new RoundImageDrawable(photo));
-            imageView.setVisibility(View.VISIBLE);
-            imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID", id);
-
-                    final Transaction transaction = (Transaction) realmQuery.findFirst();
-
-                    etName.setText(transaction.getName());
-                    name = transaction.getName();
-                    imgviewPhoto.setImageDrawable(imageView.getDrawable());
-
-
-                }
-            });
-
-            return true;
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (photo == null) {
+            return false;
         }
 
-        return false;
+        imageView.setImageDrawable(new RoundImageDrawable(photo));
+        imageView.setVisibility(View.VISIBLE);
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID", id);
+                Transaction transaction = (Transaction) realmQuery.findFirst();
+                etName.setText(transaction.getName());
+                name = transaction.getName();
+                imgviewPhoto.setImageDrawable(imageView.getDrawable());
+            }
+        });
+
+        return true;
     }
 
-    @Override
-    public void onClick(View view) {
-        int id = view.getId();
-
-        switch (id) {
-            case R.id.btnPick:
-                pickContact();
-                break;
-
-            case R.id.btnCommit:
-                commitTransaction();
-                break;
-
-            case R.id.btnViewTransactions:
-                if (name == null || name.length() == 0) {
-                    Toast.makeText(getApplicationContext(), "Pick a contact first", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
-                intent.putExtra("name", name);
-                startActivity(intent);
-                break;
-
-            case R.id.btn10:
-            case R.id.btn20:
-            case R.id.btn30:
-            case R.id.btn50:
-            case R.id.btn100:
-                setAmount(view);
-                break;
-
-        }
-
-    }
 
     private void commitTransaction() {
         if (etName.getText().length() == 0 || etAmount.getText().length() == 0 || etReason.getText().length() == 0) {
@@ -273,17 +259,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_OK) {
-            getContactData(data);
-        }
-
-    }
-
     private void getContactData(Intent data) {
+        if(data==null)
+            return;
+
         Uri contactData = data.getData();
         Cursor c = getContentResolver().query(contactData, null, null, null, null);
         if (c != null && c.moveToFirst()) {
@@ -293,32 +272,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             etName.setText(name);
             this.name = name;
 
-            Bitmap photo = null;
+            Bitmap photo = getPhotoFromId(id);
 
-            try {
-                InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
-                        ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id));
-
-                if (inputStream != null) {
-                    photo = BitmapFactory.decodeStream(inputStream);
-                }
-
-                if (inputStream != null) inputStream.close();
-
-                if (photo == null) {
-                    imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
-                    return;
-                }
-
+            if (photo == null)
+                imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
+            else
                 imgviewPhoto.setImageDrawable(new RoundImageDrawable(photo));
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
 
             c.close();
         }
+    }
+
+    private Bitmap getPhotoFromId(long id) {
+        Bitmap photo = null;
+        try {
+            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
+                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id));
+
+            if (inputStream != null) {
+                photo = BitmapFactory.decodeStream(inputStream);
+            }
+
+            if (inputStream != null) inputStream.close();
+
+            if (photo == null) {
+                return null;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return photo;
+
     }
 
     private void pickContact() {
