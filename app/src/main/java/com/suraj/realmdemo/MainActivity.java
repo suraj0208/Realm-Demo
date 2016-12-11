@@ -255,6 +255,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getContactData(Intent data) {
+        getPermissionToReadUserContacts();
+
         if(data==null)
             return;
 
@@ -279,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private Bitmap getPhotoFromId(long id) {
+        getPermissionToReadUserContacts();
         Bitmap photo = null;
         try {
             InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(),
@@ -316,11 +319,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void getPermissionToReadUserContacts() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
-
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
-
-            }
-
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
                     READ_CONTACTS_PERMISSIONS_REQUEST);
         }
