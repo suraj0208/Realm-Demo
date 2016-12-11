@@ -1,13 +1,34 @@
 package com.suraj.realmdemo;
 
+import android.support.annotation.NonNull;
+
 import io.realm.RealmObject;
 
 /**
  * Created by suraj on 9/12/16.
  */
 public class Transaction extends RealmObject implements Comparable<Transaction> {
-    protected String name;
-    protected int amount;
+    private String name;
+    private int amount;
+    private String reason;
+    private Long ID;
+    private long timestamp;
+
+    public Transaction() {
+    }
+
+    public Transaction(Transaction transaction) {
+        this.name = transaction.name;
+        this.amount = transaction.amount;
+        this.reason = transaction.reason;
+        this.ID = transaction.ID;
+        this.timestamp = transaction.timestamp;
+    }
+
+    @Override
+    public int compareTo(@NonNull Transaction transaction) {
+        return Long.valueOf(this.timestamp).compareTo(transaction.timestamp);
+    }
 
     public String getReason() {
         return reason;
@@ -17,20 +38,6 @@ public class Transaction extends RealmObject implements Comparable<Transaction> 
         this.reason = reason;
     }
 
-    protected String reason;
-    protected Long ID;
-
-    public Transaction(){
-
-    }
-
-    public Transaction(String name, int amount, String reason, Long URI) {
-        this.name = name;
-        this.amount = amount;
-        this.reason = reason;
-        this.ID = URI;
-    }
-
     public long getTimestamp() {
         return timestamp;
     }
@@ -38,8 +45,6 @@ public class Transaction extends RealmObject implements Comparable<Transaction> 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
-
-    private long timestamp;
 
     public String getName() {
         return name;
@@ -55,11 +60,6 @@ public class Transaction extends RealmObject implements Comparable<Transaction> 
 
     public void setAmount(int amount) {
         this.amount = amount;
-    }
-
-    @Override
-    public int compareTo(Transaction transaction) {
-        return Long.valueOf(this.timestamp).compareTo(transaction.timestamp);
     }
 
     public Long getID() {

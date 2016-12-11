@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Spinner spinTransaction;
     private Realm realm;
     private String name;
-    private long id;
+    private long current_id;
     private ImageView imgviewPhoto;
     private ImageView[] imageViews;
 
@@ -115,11 +115,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.btnViewTransactions:
-                if (name == null || name.length() == 0) {
-                    Toast.makeText(getApplicationContext(), "Pick a contact first", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
                 Intent intent = new Intent(MainActivity.this, ViewTransactionActivity.class);
                 intent.putExtra("name", name);
                 startActivity(intent);
@@ -141,19 +136,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         class FavTransaction extends Transaction {
 
             public FavTransaction(Transaction transaction) {
-                super(transaction.name, transaction.amount, transaction.reason, transaction.ID);
+                super(transaction);
             }
 
             @Override
             public int hashCode() {
-                return this.name.hashCode();
+                return super.getName().hashCode();
             }
 
             @Override
             public boolean equals(Object obj) {
 
                 if (obj instanceof FavTransaction)
-                    return this.name.equals(((FavTransaction) obj).getName());
+                    return super.getName().equals(((FavTransaction) obj).getName());
 
                 return super.equals(obj);
             }
@@ -190,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             favTransactionList.add(entryList.get(i).getKey());
         }
 
-
         int k = 0;
 
         for (ImageView imageView : imageViews)
@@ -199,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
             if (displayContactPictureFromID(imageViews[k], favTransactionList.get(i).getID()))
                 k++;
+
         }
     }
 
@@ -237,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Transaction transaction = realm.createObject(Transaction.class);
         transaction.setName(etName.getText().toString());
-        transaction.setID(id);
+        transaction.setID(current_id);
         transaction.setReason(etReason.getText().toString());
 
         int amount = Integer.parseInt(etAmount.getText().toString());
@@ -266,13 +261,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Uri contactData = data.getData();
         Cursor c = getContentResolver().query(contactData, null, null, null, null);
         if (c != null && c.moveToFirst()) {
-            id = c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
+            current_id = c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
 
             String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
             etName.setText(name);
             this.name = name;
 
-            Bitmap photo = getPhotoFromId(id);
+            Bitmap photo = getPhotoFromId(current_id);
 
             if (photo == null)
                 imgviewPhoto.setImageDrawable(new RoundImageDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.contacts_xxl)));
@@ -322,8 +317,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (shouldShowRequestPermissionRationale(
-                    Manifest.permission.READ_CONTACTS)) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
+
             }
 
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},

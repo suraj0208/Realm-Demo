@@ -8,24 +8,26 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
-public class ViewTransactionActivity extends Activity {
-
+public class ViewTransactionActivity extends Activity implements TransactionDisplayManager {
     private Realm realm;
-    private int owe_from = 0;
-    private int owe_to = 0;
     private TextView tvOwe;
     private TextView tvOwn;
     private TextView tvPersonName;
     private Spinner spinner;
     private String name;
     private ListView listView;
+    private boolean person;
+    private ArrayList<Transaction> transactions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,35 +40,38 @@ public class ViewTransactionActivity extends Activity {
         tvOwn = (TextView) findViewById(R.id.tvtotalown);
         tvOwe = (TextView) findViewById(R.id.tvtotalowe);
         tvPersonName = (TextView) findViewById(R.id.tvTransactionPersonName);
-
+        spinner = (Spinner) findViewById(R.id.spinWhichView);
         listView = (ListView) findViewById(R.id.lstviewTransactions);
 
 
-        if (getIntent().getExtras() != null) {
+        if (getIntent().getExtras() !=null && getIntent().getExtras().getString("name") != null) {
+            spinner.setSelection(1);
             String name = getIntent().getExtras().getString("name");
             this.name = name;
             tvPersonName.setText(name);
-            displayInListView(getPersonTransactions(name), true);
+            person=true;
+            displayInListView(getPersonTransactions(name));
         } else {
-            displayInListView(getAllReamTransactions(), false);
+            person=false;
+            spinner.setSelection(0);
+            spinner.setEnabled(false);
+            displayInListView(getAllRealmTransactions());
             tvPersonName.setText(getResources().getString(R.string.all_transactions));
         }
 
-        spinner = (Spinner) findViewById(R.id.spinWhichView);
-
-        spinner.setSelection(1);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (spinner.getSelectedItemPosition() == 0) {
-                    displayInListView(getAllReamTransactions(), false);
+                    person=false;
+                    displayInListView(getAllRealmTransactions());
                     tvPersonName.setText(getResources().getString(R.string.all_transactions));
                 } else {
-                    displayInListView(getPersonTransactions(name), true);
+                    person=true;
+                    displayInListView(getPersonTransactions(name));
                     tvPersonName.setText(name);
                 }
-
             }
 
             @Override
@@ -75,13 +80,33 @@ public class ViewTransactionActivity extends Activity {
             }
         });
 
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Transaction transaction = transactions.get(i);
+
+                realm.beginTransaction();
+
+                RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("timestamp", transaction.getTimestamp()).findAll();
+                realmResults.deleteAllFromRealm();
+
+                realm.commitTransaction();
+
+                if(person)
+                    ViewTransactionActivity.this.displayInListView(getPersonTransactions(name));
+                else
+                    ViewTransactionActivity.this.displayInListView(getAllRealmTransactions());
+                return false;
+
+            }
+        });
     }
 
-    public void displayInListView(final RealmResults<Transaction> results, final boolean single) {
-        final ArrayList<Transaction> transactions = new ArrayList<>();
+    public void displayInListView(final RealmResults<Transaction> results) {
+        transactions = new ArrayList<>();
 
-        owe_to = 0;
-        owe_from = 0;
+        int owe_to = 0;
+        int owe_from = 0;
 
         for (Transaction transaction : results) {
             transactions.add(transaction);
@@ -97,57 +122,16 @@ public class ViewTransactionActivity extends Activity {
 
         Collections.sort(transactions);
 
-
-        if (single) {
+        if (person) {
             tvOwe.setText("You owe Rs. " + owe_to + " and they owe Rs. " + owe_from);
-
-            TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions);
-            transactionAdapter.setPerson(true);
-            listView.setAdapter(transactionAdapter);
-
-            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Transaction transaction = transactions.get(i);
-
-                    realm.beginTransaction();
-
-                    RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("timestamp", transaction.getTimestamp()).findAll();
-                    realmResults.deleteAllFromRealm();
-
-                    realm.commitTransaction();
-
-                    ViewTransactionActivity.this.displayInListView(getPersonTransactions(name), single);
-                    return false;
-
-                }
-            });
-
         } else {
-            TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions);
-            listView.setAdapter(transactionAdapter);
-
             tvOwe.setText("You owe people Rs. " + owe_to + " and people owe you Rs. " + owe_from);
-
-
-            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Transaction transaction = transactions.get(i);
-
-                    realm.beginTransaction();
-
-                    RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("timestamp", transaction.getTimestamp()).findAll();
-                    realmResults.deleteFirstFromRealm();
-
-                    realm.commitTransaction();
-
-                    ViewTransactionActivity.this.displayInListView(getAllReamTransactions(), single);
-
-                    return false;
-                }
-            });
         }
+
+        TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions,this);
+        listView.setAdapter(transactionAdapter);
+
+
 
         int diff = owe_from - owe_to;
 
@@ -162,12 +146,37 @@ public class ViewTransactionActivity extends Activity {
 
     }
 
-    RealmResults<Transaction> getAllReamTransactions() {
+    RealmResults<Transaction> getAllRealmTransactions() {
         return realm.where(Transaction.class).findAll();
     }
 
     RealmResults<Transaction> getPersonTransactions(String name) {
         RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
         return realmQuery.findAll();
+    }
+
+    @Override
+    public void displayTransaction(View view, Transaction transaction) {
+        if(person)
+            ((TextView)view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getReason());
+        else
+            ((TextView)view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getName());
+
+        TextView tvTransactionState = (TextView)view.findViewById(R.id.tvTransactionRowState);
+
+        if(transaction.getAmount()>0){
+            tvTransactionState.setText("They owe you");
+        }else{
+            tvTransactionState.setText("You owe them");
+        }
+
+        ((TextView)view.findViewById(R.id.tvTransactionRowAmount)).setText("Rs. " + Math.abs(transaction.getAmount()));
+
+        Date date = new Date(transaction.getTimestamp());
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+        String dateString = formatter.format(date);
+
+        ((TextView)view.findViewById(R.id.tvdate)).setText(dateString);
     }
 }
