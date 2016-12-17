@@ -27,7 +27,7 @@ public class Transaction extends RealmObject implements Comparable<Transaction> 
 
     @Override
     public int compareTo(@NonNull Transaction transaction) {
-        return Long.valueOf(this.timestamp).compareTo(transaction.timestamp);
+        return Long.valueOf(transaction.timestamp).compareTo(this.timestamp);
     }
 
     public String getReason() {
