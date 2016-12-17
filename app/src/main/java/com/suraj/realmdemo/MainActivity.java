@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String realmURL = "realm://realm.example.com:9080/~/userRealm";
 
 
-
         realm = Realm.getDefaultInstance();
 
         showFavorites();
@@ -140,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showFavorites() {
+
+
         class FavTransaction extends Transaction {
 
             public FavTransaction(Transaction transaction) {
@@ -198,13 +199,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imageView.setVisibility(View.GONE);
 
         for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
-            if (displayContactPictureFromID(imageViews[k], favTransactionList.get(i).getID()))
+
+            if (displayContactPictureFromID(imageViews[k],getIDFromName(favTransactionList.get(i).getName()),favTransactionList.get(i).getName()))
                 k++;
 
         }
     }
 
-    public boolean displayContactPictureFromID(final ImageView imageView, final Long id) {
+    public boolean displayContactPictureFromID(final ImageView imageView, final Long id, final String contactName) {
         Bitmap photo = getPhotoFromId(id);
 
         if (photo == null) {
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RealmQuery realmQuery = realm.where(Transaction.class).equalTo("ID", id);
+                RealmQuery realmQuery = realm.where(Transaction.class).equalTo("name", contactName);
                 Transaction transaction = (Transaction) realmQuery.findFirst();
                 etName.setText(transaction.getName());
                 name = transaction.getName();
@@ -264,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getContactData(Intent data) {
         getPermissionToReadUserContacts();
 
-        if(data==null)
+        if (data == null)
             return;
 
         Uri contactData = data.getData();
@@ -329,6 +331,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
                     READ_CONTACTS_PERMISSIONS_REQUEST);
         }
+    }
+
+    public long getIDFromName(String contactName) {
+        ArrayList<String> phones = new ArrayList<String>();
+
+        Cursor cursor = getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " = ?",
+                new String[]{contactName}, null);
+
+        while (cursor != null && cursor.moveToNext()) {
+            phones.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)));
+        }
+
+
+        if (cursor != null)
+            cursor.close();
+
+        return Long.parseLong(phones.get(0));
+
     }
 
 }
