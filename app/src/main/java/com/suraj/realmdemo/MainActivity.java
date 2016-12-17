@@ -32,9 +32,6 @@ import java.util.Map;
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
-import io.realm.SyncConfiguration;
-import io.realm.SyncUser;
-import okhttp3.Credentials;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
