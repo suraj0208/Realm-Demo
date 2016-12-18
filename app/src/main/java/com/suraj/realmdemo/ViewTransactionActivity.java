@@ -1,7 +1,11 @@
 package com.suraj.realmdemo;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -19,6 +23,7 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 public class ViewTransactionActivity extends Activity implements TransactionDisplayManager {
+    private static final String OWNER = "Suraj";
     private Realm realm;
     private TextView tvOwe;
     private TextView tvOwn;
@@ -28,6 +33,8 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
     private ListView listView;
     private boolean person;
     private ArrayList<Transaction> transactions;
+    private View btnShare;
+    private StringBuilder email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,21 +49,24 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
         tvPersonName = (TextView) findViewById(R.id.tvTransactionPersonName);
         spinner = (Spinner) findViewById(R.id.spinWhichView);
         listView = (ListView) findViewById(R.id.lstviewTransactions);
+        btnShare = findViewById(R.id.btnShare);
 
 
-        if (getIntent().getExtras() !=null && getIntent().getExtras().getString("name") != null) {
+        if (getIntent().getExtras() != null && getIntent().getExtras().getString("name") != null) {
             spinner.setSelection(1);
             String name = getIntent().getExtras().getString("name");
             this.name = name;
             tvPersonName.setText(name);
-            person=true;
+            person = true;
+            btnShare.setVisibility(View.VISIBLE);
             displayInListView(getPersonTransactions(name));
         } else {
-            person=false;
+            person = false;
             spinner.setSelection(0);
             spinner.setEnabled(false);
             displayInListView(getAllRealmTransactions());
             tvPersonName.setText(getResources().getString(R.string.all_transactions));
+            btnShare.setVisibility(View.VISIBLE);
         }
 
 
@@ -64,13 +74,17 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (spinner.getSelectedItemPosition() == 0) {
-                    person=false;
+                    person = false;
                     displayInListView(getAllRealmTransactions());
+                    btnShare.setVisibility(View.INVISIBLE);
                     tvPersonName.setText(getResources().getString(R.string.all_transactions));
                 } else {
-                    person=true;
+                    person = true;
                     displayInListView(getPersonTransactions(name));
+                    btnShare.setVisibility(View.VISIBLE);
                     tvPersonName.setText(name);
+                    email  = new StringBuilder();
+                    getEmailFromNameAsync(name,email);
                 }
             }
 
@@ -92,7 +106,7 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
                 realm.commitTransaction();
 
-                if(person)
+                if (person)
                     ViewTransactionActivity.this.displayInListView(getPersonTransactions(name));
                 else
                     ViewTransactionActivity.this.displayInListView(getAllRealmTransactions());
@@ -100,6 +114,45 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
             }
         });
+
+        btnShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StringBuilder content = new StringBuilder();
+
+                Intent share = new Intent(android.content.Intent.ACTION_SEND);
+                share.setType("text/plain");
+                share.putExtra(Intent.EXTRA_EMAIL, new String[]{email.toString()});
+
+                String prevDate = null;
+                String currentDate;
+
+                for (Transaction transaction : transactions) {
+                    currentDate=getDateFromTimeStamp(transaction.getTimestamp());
+
+                    if(!currentDate.equals(prevDate)){
+                        content.append("\n\non ").append(getDateFromTimeStamp(transaction.getTimestamp())).append("\n");
+                    }
+
+                    prevDate=currentDate;
+
+                    if (transaction.getAmount() < 0)
+                        content.append(OWNER + " owes ").append(transaction.getName()).append(" Rs ").append(transaction.getAmount() * -1).append(" for ").append(transaction.getReason()).append("\n");
+                    else
+                        content.append(transaction.getName()).append(" owes ").append(OWNER).append(" Rs ").append(transaction.getAmount()).append(" for ").append(transaction.getReason()).append("\n");
+
+                }
+
+                share.putExtra(Intent.EXTRA_SUBJECT, "Transactions with " + transactions.get(0).getName());
+                share.putExtra(Intent.EXTRA_TEXT, content.toString());
+
+                startActivity(Intent.createChooser(share, "Share Transactions"));
+
+
+            }
+        });
+
+
     }
 
     public void displayInListView(final RealmResults<Transaction> results) {
@@ -128,9 +181,8 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             tvOwe.setText("You owe people Rs. " + owe_to + " and people owe you Rs. " + owe_from);
         }
 
-        TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions,this);
+        TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions, this);
         listView.setAdapter(transactionAdapter);
-
 
 
         int diff = owe_from - owe_to;
@@ -157,26 +209,61 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
     @Override
     public void displayTransaction(View view, Transaction transaction) {
-        if(person)
-            ((TextView)view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getReason());
+        if (person)
+            ((TextView) view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getReason());
         else
-            ((TextView)view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getName());
+            ((TextView) view.findViewById(R.id.tvTransactionRowName)).setText(transaction.getName());
 
-        TextView tvTransactionState = (TextView)view.findViewById(R.id.tvTransactionRowState);
+        TextView tvTransactionState = (TextView) view.findViewById(R.id.tvTransactionRowState);
 
-        if(transaction.getAmount()>0){
+        if (transaction.getAmount() > 0) {
             tvTransactionState.setText("They owe you");
-        }else{
+        } else {
             tvTransactionState.setText("You owe them");
         }
 
-        ((TextView)view.findViewById(R.id.tvTransactionRowAmount)).setText("Rs. " + Math.abs(transaction.getAmount()));
+        ((TextView) view.findViewById(R.id.tvTransactionRowAmount)).setText("Rs. " + Math.abs(transaction.getAmount()));
 
-        Date date = new Date(transaction.getTimestamp());
-
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
-        String dateString = formatter.format(date);
-
-        ((TextView)view.findViewById(R.id.tvdate)).setText(dateString);
+        ((TextView) view.findViewById(R.id.tvdate)).setText(getDateFromTimeStamp(transaction.getTimestamp()));
     }
+
+    public String getDateFromTimeStamp(long timestamp) {
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(timestamp));
+    }
+
+    public void getEmailFromNameAsync(final String contactName,final StringBuilder result) {
+
+        (new AsyncTask<Void,Void,StringBuilder>(){
+            @Override
+            protected StringBuilder doInBackground(Void... voids) {
+
+                ArrayList<String> emails = new ArrayList<String>();
+
+                Cursor cursor = getContentResolver().query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " = ?",
+                        new String[]{contactName}, null);
+
+                while (cursor != null && cursor.moveToNext()) {
+                    emails.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
+                }
+
+
+                if (cursor != null)
+                    cursor.close();
+
+                return emails.size()>0?new StringBuilder(emails.get(0)) :null;
+            }
+
+            @Override
+            protected void onPostExecute(StringBuilder stringBuilder) {
+                result.append(stringBuilder);
+            }
+        }).execute();
+
+
+
+    }
+
 }

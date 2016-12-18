@@ -81,10 +81,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Realm.init(this);
 
-// Opening a remote Realm
-        String realmURL = "realm://realm.example.com:9080/~/userRealm";
-
-
         realm = Realm.getDefaultInstance();
 
         showFavorites();

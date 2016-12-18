@@ -25,6 +25,18 @@
         android:text="@string/pick"
         android:textSize="22sp" />
 
+    <Button
+        android:id="@+id/btnShare"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/tvTransactionPersonName"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/ic_share_black_24dp" />
+
     <TextView
         android:id="@+id/tvtotalowe"
         android:layout_width="wrap_content"
@@ -46,6 +58,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tvtotalown"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp" />
 
 </RelativeLayout>

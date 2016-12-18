@@ -8,6 +8,7 @@
     <string name="freq_string">Frequents</string>
     <string name="all_transactions">All transactions</string>
     <string name="reason">For what?</string>
+    <string name="menu_item_share">Share</string>
 
 
     <array name="transactionArray">
