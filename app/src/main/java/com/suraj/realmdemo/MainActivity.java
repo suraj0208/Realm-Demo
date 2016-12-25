@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
 
-            if (displayContactPictureFromID(imageViews[k],getIDFromName(favTransactionList.get(i).getName()),favTransactionList.get(i).getName()))
+            if (displayContactPictureFromID(imageViews[k], getIDFromName(favTransactionList.get(i).getName()), favTransactionList.get(i).getName()))
                 k++;
 
         }
@@ -327,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
                     READ_CONTACTS_PERMISSIONS_REQUEST);
         }
+
     }
 
     public long getIDFromName(String contactName) {
@@ -347,6 +349,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cursor.close();
 
         return Long.parseLong(phones.get(0));
+
+
+
+
 
     }
 

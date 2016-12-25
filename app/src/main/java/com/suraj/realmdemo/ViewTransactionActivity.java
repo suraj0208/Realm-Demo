@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 public class ViewTransactionActivity extends Activity implements TransactionDisplayManager {
-    private static final String OWNER = "Suraj";
+    public static String OWNER;
     private Realm realm;
     private TextView tvOwe;
     private TextView tvOwn;
@@ -59,12 +60,12 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             tvPersonName.setText(name);
             person = true;
             btnShare.setVisibility(View.VISIBLE);
-            displayInListView(getPersonTransactions(name));
+            calculateAndDisplayTotal(getPersonTransactions(name),true);
         } else {
             person = false;
             spinner.setSelection(0);
             spinner.setEnabled(false);
-            displayInListView(getAllRealmTransactions());
+            calculateAndDisplayTotal(getAllRealmTransactions(),true);
             tvPersonName.setText(getResources().getString(R.string.all_transactions));
             btnShare.setVisibility(View.VISIBLE);
         }
@@ -75,16 +76,17 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (spinner.getSelectedItemPosition() == 0) {
                     person = false;
-                    displayInListView(getAllRealmTransactions());
+                    calculateAndDisplayTotal(getAllRealmTransactions(),true);
                     btnShare.setVisibility(View.INVISIBLE);
                     tvPersonName.setText(getResources().getString(R.string.all_transactions));
                 } else {
                     person = true;
-                    displayInListView(getPersonTransactions(name));
+                    calculateAndDisplayTotal(getPersonTransactions(name),true);
                     btnShare.setVisibility(View.VISIBLE);
                     tvPersonName.setText(name);
-                    email  = new StringBuilder();
-                    getEmailFromNameAsync(name,email);
+                    email = new StringBuilder();
+                    setEmailFromNameAsync(name, email);
+                    setOwnerNameAsync();
                 }
             }
 
@@ -107,11 +109,22 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
                 realm.commitTransaction();
 
                 if (person)
-                    ViewTransactionActivity.this.displayInListView(getPersonTransactions(name));
+                    ViewTransactionActivity.this.calculateAndDisplayTotal(getPersonTransactions(name),true);
                 else
-                    ViewTransactionActivity.this.displayInListView(getAllRealmTransactions());
+                    ViewTransactionActivity.this.calculateAndDisplayTotal(getAllRealmTransactions(),true);
                 return false;
 
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(!person)
+                    return;
+
+                long till = transactions.get(i).getTimestamp();
+                calculateAndDisplayTotal(getAllRealmTransactionsTill(till,name),false);
             }
         });
 
@@ -128,13 +141,13 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
                 String currentDate;
 
                 for (Transaction transaction : transactions) {
-                    currentDate=getDateFromTimeStamp(transaction.getTimestamp());
+                    currentDate = getDateFromTimeStamp(transaction.getTimestamp());
 
-                    if(!currentDate.equals(prevDate)){
+                    if (!currentDate.equals(prevDate)) {
                         content.append("\n\non ").append(getDateFromTimeStamp(transaction.getTimestamp())).append("\n");
                     }
 
-                    prevDate=currentDate;
+                    prevDate = currentDate;
 
                     if (transaction.getAmount() < 0)
                         content.append(OWNER + " owes ").append(transaction.getName()).append(" Rs ").append(transaction.getAmount() * -1).append(" for ").append(transaction.getReason()).append("\n");
@@ -155,14 +168,14 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
     }
 
-    public void displayInListView(final RealmResults<Transaction> results) {
-        transactions = new ArrayList<>();
+    public void calculateAndDisplayTotal(final RealmResults<Transaction> results, boolean showInListView) {
+        ArrayList<Transaction> tempTransactions = new ArrayList<>();
 
         int owe_to = 0;
         int owe_from = 0;
 
         for (Transaction transaction : results) {
-            transactions.add(transaction);
+            tempTransactions.add(transaction);
 
             if (transaction.getAmount() < 0)
                 owe_to += transaction.getAmount();
@@ -173,7 +186,6 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
         owe_to *= -1;
 
-        Collections.sort(transactions);
 
         if (person) {
             tvOwe.setText("You owe Rs. " + owe_to + " and they owe Rs. " + owe_from);
@@ -181,8 +193,12 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             tvOwe.setText("You owe people Rs. " + owe_to + " and people owe you Rs. " + owe_from);
         }
 
-        TransactionAdapter transactionAdapter = new TransactionAdapter(getApplicationContext(), transactions, this);
-        listView.setAdapter(transactionAdapter);
+        if(showInListView) {
+            transactions=tempTransactions;
+            Collections.sort(transactions);
+            listView.setAdapter(new TransactionAdapter(getApplicationContext(), transactions, this));
+        }
+
 
 
         int diff = owe_from - owe_to;
@@ -198,12 +214,19 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
     }
 
+
+
     RealmResults<Transaction> getAllRealmTransactions() {
         return realm.where(Transaction.class).findAll();
     }
 
-    RealmResults<Transaction> getPersonTransactions(String name) {
-        RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", name);
+    RealmResults<Transaction> getAllRealmTransactionsTill(long till,String person){
+        RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).lessThanOrEqualTo("timestamp",till).equalTo("name",person);
+        return  realmQuery.findAll();
+    }
+
+    RealmResults<Transaction> getPersonTransactions(String person) {
+        RealmQuery<Transaction> realmQuery = realm.where(Transaction.class).equalTo("name", person);
         return realmQuery.findAll();
     }
 
@@ -231,9 +254,9 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
         return new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(timestamp));
     }
 
-    public void getEmailFromNameAsync(final String contactName,final StringBuilder result) {
+    public void setEmailFromNameAsync(final String contactName, final StringBuilder result) {
 
-        (new AsyncTask<Void,Void,StringBuilder>(){
+        (new AsyncTask<Void, Void, StringBuilder>() {
             @Override
             protected StringBuilder doInBackground(Void... voids) {
 
@@ -253,7 +276,7 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
                 if (cursor != null)
                     cursor.close();
 
-                return emails.size()>0?new StringBuilder(emails.get(0)) :null;
+                return emails.size() > 0 ? new StringBuilder(emails.get(0)) : null;
             }
 
             @Override
@@ -262,8 +285,42 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
             }
         }).execute();
 
-
-
     }
 
+    public void setOwnerNameAsync() {
+
+        (new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
+
+                if (c == null) {
+                    return null;
+                }
+
+                c.moveToFirst();
+
+                if (c.getColumnCount() > 0)
+                    return c.getString(c.getColumnIndex("display_name"));
+
+                c.close();
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+
+                if (s == null) {
+                    ViewTransactionActivity.OWNER = "Sender";
+                    Toast.makeText(ViewTransactionActivity.this, "Owner name on set, using sender as a default name for sharing. Please set-up profile in your contacts app.", Toast.LENGTH_SHORT).show();
+                } else {
+                    ViewTransactionActivity.OWNER = "Sender";
+                    ViewTransactionActivity.OWNER = s;
+                }
+
+            }
+        }).execute();
+
+    }
 }
