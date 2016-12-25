@@ -24,18 +24,26 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 public class ViewTransactionActivity extends Activity implements TransactionDisplayManager {
-    public static String OWNER;
+    private boolean person;
+
+    private static String OWNER;
+    private String name;
+
+    private StringBuilder email;
+
+    private ArrayList<Transaction> transactions;
+
     private Realm realm;
+
     private TextView tvOwe;
     private TextView tvOwn;
     private TextView tvPersonName;
+
     private Spinner spinner;
-    private String name;
+
     private ListView listView;
-    private boolean person;
-    private ArrayList<Transaction> transactions;
     private View btnShare;
-    private StringBuilder email;
+    private View btnDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +59,7 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
         spinner = (Spinner) findViewById(R.id.spinWhichView);
         listView = (ListView) findViewById(R.id.lstviewTransactions);
         btnShare = findViewById(R.id.btnShare);
+        btnDelete = findViewById(R.id.btnDelete);
 
 
         if (getIntent().getExtras() != null && getIntent().getExtras().getString("name") != null) {
@@ -161,6 +170,23 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
 
                 startActivity(Intent.createChooser(share, "Share Transactions"));
 
+
+            }
+        });
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                realm.beginTransaction();
+
+                RealmResults<Transaction> realmResults = realm.where(Transaction.class).equalTo("name", name).findAll();
+                realmResults.deleteAllFromRealm();
+
+                realm.commitTransaction();
+
+                Toast.makeText(getApplicationContext(),"Deleted Successfully",Toast.LENGTH_SHORT).show();
+
+                ViewTransactionActivity.this.finish();
 
             }
         });
