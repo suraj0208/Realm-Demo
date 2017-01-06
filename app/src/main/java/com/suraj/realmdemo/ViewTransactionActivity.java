@@ -318,18 +318,26 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
         (new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
-                Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
 
-                if (c == null) {
-                    return null;
+                try{
+                    Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
+
+                    if (c == null) {
+                        return null;
+                    }
+
+                    c.moveToFirst();
+
+                    if (c.getColumnCount() > 0)
+                        return c.getString(c.getColumnIndex("display_name"));
+
+                    c.close();
+
+                }catch(Exception ex){
+                    ex.printStackTrace();
                 }
 
-                c.moveToFirst();
 
-                if (c.getColumnCount() > 0)
-                    return c.getString(c.getColumnIndex("display_name"));
-
-                c.close();
 
                 return null;
             }
@@ -341,7 +349,6 @@ public class ViewTransactionActivity extends Activity implements TransactionDisp
                     ViewTransactionActivity.OWNER = "Sender";
                     Toast.makeText(ViewTransactionActivity.this, "Owner name on set, using sender as a default name for sharing. Please set-up profile in your contacts app.", Toast.LENGTH_SHORT).show();
                 } else {
-                    ViewTransactionActivity.OWNER = "Sender";
                     ViewTransactionActivity.OWNER = s;
                 }
 
