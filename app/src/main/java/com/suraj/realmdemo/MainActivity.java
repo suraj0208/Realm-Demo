@@ -9,11 +9,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,7 +36,7 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, FrequentsAdapter.ClickListener {
     private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 1;
     private EditText etName;
     private EditText etAmount;
@@ -45,7 +46,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String name;
     private long current_id;
     private ImageView imgviewPhoto;
-    private ImageView[] imageViews;
+    private FrequentsAdapter frequentsAdapter;
+    //private ImageView[] imageViews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +70,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         (findViewById(R.id.btn50)).setOnClickListener(this);
         (findViewById(R.id.btn100)).setOnClickListener(this);
 
-        imageViews = new ImageView[]{(ImageView) findViewById(R.id.imgbtnFreq1),
-                (ImageView) findViewById(R.id.imgbtnFreq2),
-                (ImageView) findViewById(R.id.imgbtnFreq3),
-                (ImageView) findViewById(R.id.imgbtnFreq4),
-                (ImageView) findViewById(R.id.imgbtnFreq5)};
-
 
         imgviewPhoto = ((ImageView) findViewById(R.id.imgviewContact));
 
@@ -84,14 +80,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         realm = Realm.getDefaultInstance();
 
-        showFavorites();
+        showFrequents();
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        showFavorites();
+        showFrequents();
     }
 
     @Override
@@ -132,12 +128,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
         }
-
     }
 
-    private void showFavorites() {
-
-
+    private void showFrequents() {
         class FavTransaction extends Transaction {
 
             public FavTransaction(Transaction transaction) {
@@ -159,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-
         RealmResults<Transaction> results = realm.where(Transaction.class).findAll();
 
         HashMap<FavTransaction, Integer> hashMap = new HashMap<>();
@@ -173,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-
         List<Map.Entry<FavTransaction, Integer>> entryList = new ArrayList<>(hashMap.entrySet());
 
         Collections.sort(entryList, new Comparator<Map.Entry<FavTransaction, Integer>>() {
@@ -183,24 +174,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-
-        List<FavTransaction> favTransactionList = new ArrayList<>();
+        List<Contact> contacts = new ArrayList<>();
 
         for (int i = 0; i < entryList.size(); i++) {
-            favTransactionList.add(entryList.get(i).getKey());
-        }
+            FavTransaction favTransaction = entryList.get(i).getKey();
 
-        int k = 0;
+            Bitmap bitmap = getPhotoFromId(getIDFromName(favTransaction.getName()));
 
-        for (ImageView imageView : imageViews)
-            imageView.setVisibility(View.GONE);
+            if(bitmap ==null)
+                bitmap=BitmapFactory.decodeResource(getResources(),R.drawable.contacts_xxl);
 
-        for (int i = 0; k < 5 && i < favTransactionList.size(); i++) {
-
-            if (displayContactPictureFromID(imageViews[k], getIDFromName(favTransactionList.get(i).getName()), favTransactionList.get(i).getName()))
-                k++;
+            contacts.add(new Contact(favTransaction.getName(), new RoundImageDrawable(bitmap)));
 
         }
+
+        frequentsAdapter = new FrequentsAdapter(this, contacts, this);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerFrequents);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(frequentsAdapter);
+
     }
 
     public boolean displayContactPictureFromID(final ImageView imageView, final Long id, final String contactName) {
@@ -256,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Toast.makeText(getApplicationContext(), "Data Entered", Toast.LENGTH_SHORT).show();
 
-        showFavorites();
+        showFrequents();
 
     }
 
@@ -344,16 +338,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             phones.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)));
         }
 
-
         if (cursor != null)
             cursor.close();
 
         return Long.parseLong(phones.get(0));
-
-
-
-
-
     }
 
+    @Override
+    public void itemClicked(View view, int position) {
+        RealmQuery realmQuery = realm.where(Transaction.class).equalTo("name", frequentsAdapter.getContacts().get(position).getName());
+        Transaction transaction = (Transaction) realmQuery.findFirst();
+        etName.setText(transaction.getName());
+        name = transaction.getName();
+        imgviewPhoto.setImageDrawable(frequentsAdapter.getContacts().get(position).getPicture());
+    }
 }

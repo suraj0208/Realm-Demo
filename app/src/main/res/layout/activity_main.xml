@@ -10,7 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.suraj.realmdemo.MainActivity">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -188,67 +187,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-
-                <LinearLayout
-                    android:id="@+id/llayoutFrequents"
-                    android:layout_width="match_parent"
-                    android:layout_height="70dp"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:orientation="horizontal"
-                    android:weightSum="5">
-
-                    <ImageView
-                        android:id="@+id/imgbtnFreq1"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:minWidth="30dp"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/imgbtnFreq2"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/imgbtnFreq3"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/imgbtnFreq4"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/imgbtnFreq5"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-
                 <TextView
                     android:id="@+id/tvFreqTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_above="@id/llayoutFrequents"
                     android:layout_margin="10dp"
                     android:text="@string/freq_string" />
 
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerFrequents"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/tvFreqTitle" />
 
             </RelativeLayout>
 
